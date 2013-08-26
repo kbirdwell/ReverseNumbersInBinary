@@ -1,0 +1,157 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Reverse Numbers in Binary</title>
+    <style>
+        fieldset {
+            border:none;
+        }
+
+        label {
+            display: block;
+        }
+
+        input[readonly="readonly"]
+        {
+            border: none;
+        }
+    </style>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Reverse Numbers in Binary</h1>
+    <form method="post">
+        <fieldset>
+            <legend></legend>
+            <label for="numberToReverse">Number to reverse</label>
+            <input id="numberToReverse" type="text" />
+            <input id="reverseButton" type="submit" value="Binary Reverse" />
+        </fieldset>
+        <fieldset id="reversedNumberFieldset" style="display:none">
+            <legend></legend>
+            <label for="reversedNumber">Reversed number</label>
+            <input id="reversedNumber" type="text" readonly="readonly" />
+        </fieldset>
+    </form>
+    <script type="text/javascript">        
+        var IntConvert = function () {
+            /// <summary>
+            /// A  singleton class to convert integers to/from binary 
+            /// </summary>
+
+            me = this;
+
+            /// <summary>
+            /// Converts the specified number to its equivalent binary representation
+            /// </summary>
+            me.toBinary = function (integer) {
+                var binaryRepresentation = "";
+
+                if (integer || integer === 0) {
+                    binaryRepresentation = integer.toString(2);
+                }
+
+                return binaryRepresentation;
+            };
+            
+            me.fromBinary = function (binaryInteger) {
+                /// <summary>
+                /// Converts the specified binary integer to its integer equivalent
+                /// </summary>
+                return parseInt(binaryInteger, 2);
+            };
+
+            return {
+                toBinary: me.toBinary,
+                fromBinary: me.fromBinary
+            };
+        }();
+        
+        String.prototype.reverse = function () {
+            /// <summary>
+            /// A function to reverse a string (properly handles unicode strings)
+            /// </summary>
+            var reversedValue = "";
+
+            var symbolWithCombiningMarksRegex = /([\0-\u02FF\u0370-\u1DBF\u1E00-\u20CF\u2100-\uD7FF\uDC00-\uFE1F\uFE30-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF])([\u0300-\u036F\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]+)/g;
+            var surrogatePairRegex = /([\uD800-\uDBFF])([\uDC00-\uDFFF])/g;
+
+            // swap symbols with their combining marks so that the combining marks go first
+            reversedValue = this.replace(symbolWithCombiningMarksRegex, function ($0, $1, $2) {
+                return $2.reverse() + $1;
+            });
+
+            // swap high and low surrogates so that the low surrogates go first			
+            reversedValue = reversedValue.replace(surrogatePairRegex, '$2$1');
+
+            // now reverse the entire string
+            reversedValue = reversedValue.split("").reverse().join("");
+
+            // return the result
+            return reversedValue;
+        };
+        
+        var Page = function () {
+            /// <summary>
+            /// A singleton class to handle actions on this page
+            /// </summary>
+
+            var me = this;
+            
+            me.onFormSubmit = function (evt) {
+                /// <summary>
+                /// Called when the form is submitted
+                /// </summary>
+
+                // cause a form submit to actually trigger a reverse button click
+                $("#reverseButton").focus();
+                $("#reverseButton").trigger("click");
+                // don't really submit the form
+                return false;
+            }
+            
+            me.onNumberToReverseKeydown = function (evt) {
+                /// <summary>
+                /// Called when a key is pressed in the "reversed number" input
+                /// </summary>
+
+                // hide the results
+                $("#reversedNumberFieldset").fadeOut();
+            };
+            
+            me.onReverseButtonClick = function (evt) {
+                /// <summary>
+                /// Called when the reverse button is clicked
+                /// </summary>
+
+                // get the number to reverse
+                var numberToReverse = parseInt(document.getElementById("numberToReverse").value);
+                // get the number's binary representation
+                var binaryNumberToReverse = IntConvert.toBinary(numberToReverse);
+                // reverse the number's binary representation
+                var reversedBinaryNumber = binaryNumberToReverse.reverse();
+                // convert the reveresed binary representation to an integer
+                var reversedNumber = IntConvert.fromBinary(reversedBinaryNumber);
+                // set the value of the reversed number input to the reversed number
+                document.getElementById("reversedNumber").value = reversedNumber;
+                // show the results
+                $("#reversedNumberFieldset").fadeIn();
+            };
+
+            return {
+                onFormSubmit: me.onFormSubmit,
+                onNumberToReverseKeydown: me.onNumberToReverseKeydown,
+                onReverseButtonClick: me.onReverseButtonClick
+            };
+        }();
+
+
+        $(function () {
+            // setup event handlers
+            $("form").on("submit", Page.onFormSubmit);
+            $("#numberToReverse").on("keydown", Page.onNumberToReverseKeydown);
+            $("#reverseButton").on("click", Page.onReverseButtonClick);
+        });
+    </script>
+</body>
+</html>
